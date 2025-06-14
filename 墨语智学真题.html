@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>墨语智学 - 四六级真题库</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#2962FF',
+        secondary: '#1A237E'
+      },
+      borderRadius: {
+        'none': '0px',
+        'sm': '2px',
+        DEFAULT: '4px',
+        'md': '8px',
+        'lg': '12px',
+        'xl': '16px',
+        '2xl': '20px',
+        '3xl': '24px',
+        'full': '9999px',
+        'button': '4px'
+      },
+      fontFamily: {
+        'sans': ['Poppins', 'sans-serif']
+      }
+    }
+  }
+}
+</script>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #F8FAFC;
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #F0F7FF 0%, #E3F2FF 100%);
+  }
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(41, 98, 255, 0.1);
+  }
+  .sidebar-item {
+    transition: all 0.2s ease;
+  }
+  .sidebar-item:hover {
+    background-color: #E3F2FF;
+  }
+  .sidebar-item.active {
+    background-color: #E3F2FF;
+    border-left: 4px solid #2962FF;
+  }
+  .content-section {
+    display: none;
+  }
+  .content-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tab-button {
+    transition: all 0.2s ease;
+  }
+  .tab-button.active {
+    background-color: #2962FF;
+    color: white;
+  }
+</style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="flex items-center justify-between px-6 lg:px-12 h-16 bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-blue-50">
+  <div class="flex items-center gap-8 lg:gap-16">
+    <a href="墨语智学首页.html" class="flex items-center gap-3">
+      <span class="text-primary text-2xl font-bold tracking-tight">墨语智学</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-8">
+      <a href="墨语智学首页.html" class="text-gray-700 hover:text-primary transition-colors font-medium">首页</a>
+      <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">备考规划</a>
+      <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">在线教学</a>
+      <a href="墨语智学真题.html" class="text-primary font-medium">真题练习</a>
+      <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">学习社区</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4 lg:gap-6">
+    <a href="墨语智学登录.html" class="flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary !rounded-button hover:bg-blue-100 transition-colors">
+      <span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>
+    </a>
+    <a href="墨语智学聊天.html" class="flex items-center px-4 lg:px-6 py-2 bg-primary text-white !rounded-button hover:bg-secondary transition-colors">
+      <span class="whitespace-nowrap font-medium text-sm lg:text-base">免费试用</span>
+    </a>
+  </div>
+</nav>
+
+<!-- 主体内容 -->
+<div class="flex pt-16 min-h-screen">
+  <!-- 侧边栏 -->
+  <div class="hidden lg:block w-64 bg-white border-r border-gray-200 p-4 fixed h-full">
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-secondary mb-4">真题分类</h3>
+      <div class="space-y-1">
+        <a href="#" class="block sidebar-item active px-3 py-2 rounded-md" data-type="cet4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-book text-primary"></i>
+            <span class="text-gray-700">英语四级真题</span>
+          </div>
+        </a>
+        <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-type="cet6">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-book-open text-primary"></i>
+            <span class="text-gray-700">英语六级真题</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    
+    <div>
+      <h3 class="text-lg font-semibold text-secondary mb-4">年份选择</h3>
+      <div class="space-y-1" id="year-list">
+        <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2024">
+          <div class="flex items-center gap-2">
+            <i class="far fa-calendar-alt text-primary"></i>
+            <span class="text-gray-700">2024年真题</span>
+          </div>
+        </a>
+        <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2023">
+          <div class="flex items-center gap-2">
+            <i class="far fa-calendar-alt text-primary"></i>
+            <span class="text-gray-700">2023年真题</span>
+          </div>
+        </a>
+        <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2022">
+          <div class="flex items-center gap-2">
+            <i class="far fa-calendar-alt text-primary"></i>
+            <span class="text-gray-700">2022年真题</span>
+          </div>
+        </a>
+        <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2021">
+          <div class="flex items-center gap-2">
+            <i class="far fa-calendar-alt text-primary"></i>
+            <span class="text-gray-700">2021年真题</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-secondary mb-4">真题下载</h3>
+      <div class="space-y-2">
+        <a href="#" class="block px-3 py-2 bg-blue-50 text-primary rounded-md hover:bg-blue-100 transition-colors">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-download"></i>
+            <span>四级真题PDF合集</span>
+          </div>
+        </a>
+        <a href="#" class="block px-3 py-2 bg-blue-50 text-primary rounded-md hover:bg-blue-100 transition-colors">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-download"></i>
+            <span>六级真题PDF合集</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主内容区 -->
+  <div class="flex-1 lg:ml-64 p-6">
+    <!-- 移动端筛选 -->
+    <div class="lg:hidden mb-6 bg-white p-4 rounded-lg shadow-sm">
+      <div class="flex items-center gap-4 mb-4">
+        <select id="mobile-type-select" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="cet4">英语四级</option>
+          <option value="cet6">英语六级</option>
+        </select>
+        <select id="mobile-year-select" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="2024">2024年</option>
+          <option value="2023">2023年</option>
+          <option value="2022">2022年</option>
+          <option value="2021">2021年</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- 标题和切换按钮 -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+      <h2 class="text-2xl font-bold text-secondary mb-4 sm:mb-0" id="content-title">2024年6月英语四级真题</h2>
+      <div class="flex bg-blue-50 rounded-lg p-1">
+        <button class="tab-button px-4 py-2 rounded-md active" data-tab="paper">真题试卷</button>
+        <button class="tab-button px-4 py-2 rounded-md" data-tab="analysis">答案解析</button>
+      </div>
+    </div>
+    
+    <!-- 真题内容区域 -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <!-- 真题试卷 -->
+      <div class="content-section active p-6 lg:p-8" id="paper-content">
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-secondary mb-4">第一部分：写作</h3>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3"><strong>Directions:</strong> For this part, you are allowed 30 minutes to write an essay on the importance of developing a healthy lifestyle. You should write at least 120 words but no more than 180 words.</p>
+            <div class="bg-white p-4 rounded border border-gray-200">
+              <p class="text-gray-600">请在此处作答...</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-secondary mb-4">第二部分：听力</h3>
+          <div class="space-y-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p class="text-gray-700 mb-3"><strong>Section A</strong></p>
+              <div class="space-y-4">
+                <div class="bg-white p-3 rounded border border-gray-200">
+                  <p class="text-gray-600 mb-2"><strong>1.</strong> What does the woman suggest the man do?</p>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                      <input type="radio" id="q1-a" name="q1">
+                      <label for="q1-a" class="text-gray-700">A) Check the website for updates</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input type="radio" id="q1-b" name="q1">
+                      <label for="q1-b" class="text-gray-700">B) Contact the IT department</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input type="radio" id="q1-c" name="q1">
+                      <label for="q1-c" class="text-gray-700">C) Try again later</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input type="radio" id="q1-d" name="q1">
+                      <label for="q1-d" class="text-gray-700">D) Use a different browser</label>
+                    </div>
+                  </div>
+                </div>
+                <!-- 更多听力题目... -->
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-secondary mb-4">第三部分：阅读</h3>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3"><strong>Section B</strong></p>
+            <div class="bg-white p-4 rounded border border-gray-200 mb-4">
+              <p class="text-gray-700 mb-2">Passage One</p>
+              <p class="text-gray-600 mb-4">The concept of artificial intelligence (AI) has been around for decades, but only in recent years has it become a reality in our daily lives. From virtual assistants to self-driving cars, AI is transforming the way we live and work...</p>
+              <div class="space-y-3">
+                <p class="text-gray-700"><strong>26.</strong> What is the main idea of the passage?</p>
+                <div class="space-y-2 ml-4">
+                  <div class="flex items-center gap-2">
+                    <input type="radio" id="q26-a" name="q26">
+                    <label for="q26-a" class="text-gray-700">A) The history of AI development</label>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="radio" id="q26-b" name="q26">
+                    <label for="q26-b" class="text-gray-700">B) The impact of AI on daily life</label>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="radio" id="q26-c" name="q26">
+                    <label for="q26-c" class="text-gray-700">C) The technical challenges of AI</label>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="radio" id="q26-d" name="q26">
+                    <label for="q26-d" class="text-gray-700">D) The future predictions of AI</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 更多阅读题目... -->
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-xl font-semibold text-secondary mb-4">第四部分：翻译</h3>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3"><strong>Directions:</strong> For this part, you are allowed 30 minutes to translate a passage from Chinese into English. You should write your answer on Answer Sheet 2.</p>
+            <div class="bg-white p-4 rounded border border-gray-200 mb-3">
+              <p class="text-gray-700">中国茶文化是中国制茶、饮茶的文化。中国是茶的故乡，中国人发现并利用茶，据说始于神农时代，少说也有4700多年了。直到现在，中国各族同胞还有民以茶代礼的风俗。</p>
+            </div>
+            <div class="bg-white p-4 rounded border border-gray-200">
+              <p class="text-gray-600">请在此处作答...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 答案解析 -->
+      <div class="content-section p-6 lg:p-8" id="analysis-content">
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-secondary mb-4">写作部分解析</h3>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3"><strong>题目分析：</strong></p>
+            <p class="text-gray-600 mb-4">本次四级写作题目要求考生就"养成健康生活方式的重要性"这一话题进行论述。这是一篇典型的议论文，考生需要从多个角度阐述健康生活方式的重要性，并提出相关建议。</p>
+            
+            <p class="text-gray-700 mb-3"><strong>参考范文：</strong></p>
+            <div class="bg-white p-4 rounded border border-gray-200 mb-4">
+              <p class="text-gray-600">The Importance of Developing a Healthy Lifestyle</p>
+              <p class="text-gray-600 mt-2">Nowadays, with the acceleration of life pace, more and more people are neglecting the importance of maintaining a healthy lifestyle. However, developing healthy living habits is crucial for both physical and mental well-being.</p>
+              <p class="text-gray-600 mt-2">Firstly, a healthy lifestyle can prevent various diseases. Regular exercise and balanced diet can strengthen our immune system and reduce the risk of chronic illnesses. Secondly, healthy habits improve work efficiency. Adequate sleep and proper relaxation enable us to concentrate better and be more productive. Lastly, healthy living brings happiness. When we feel good physically, we are more likely to maintain a positive attitude towards life.</p>
+              <p class="text-gray-600 mt-2">In conclusion, cultivating a healthy lifestyle is essential in modern society. We should pay attention to our daily habits and make conscious efforts to live healthily.</p>
+            </div>
+            
+            <p class="text-gray-700 mb-3"><strong>范文解析：</strong></p>
+            <ul class="list-disc pl-5 space-y-2 text-gray-600">
+              <li>文章结构清晰，分为引言、主体段落和结论三部分</li>
+              <li>主体段落从三个不同角度论述健康生活方式的重要性</li>
+              <li>使用了Firstly, Secondly, Lastly等连接词，使文章逻辑清晰</li>
+              <li>词汇丰富，如acceleration, crucial, chronic illnesses等</li>
+              <li>语法结构多样，包含复合句和简单句的交替使用</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-secondary mb-4">听力部分解析</h3>
+          <div class="space-y-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p class="text-gray-700 mb-3"><strong>Section A 第1题解析：</strong></p>
+              <div class="bg-white p-3 rounded border border-gray-200">
+                <p class="text-gray-600 mb-2"><strong>题目：</strong> What does the woman suggest the man do?</p>
+                <p class="text-gray-600 mb-2"><strong>正确选项：</strong> A) Check the website for updates</p>
+                <p class="text-gray-600 mb-2"><strong>原文内容：</strong> "Why don't you check the university website? They usually post updates about system maintenance there."</p>
+                <p class="text-gray-600"><strong>解析：</strong> 女士明确建议男士"check the university website"，与A选项完全一致。其他选项虽然在对话中可能被提及，但不是女士的建议。</p>
+              </div>
+            </div>
+            <!-- 更多听力解析... -->
+          </div>
+        </div>
+        
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-secondary mb-4">阅读部分解析</h3>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3"><strong>Section B 第26题解析：</strong></p>
+            <div class="bg-white p-4 rounded border border-gray-200">
+              <p class="text-gray-600 mb-2"><strong>题目：</strong> What is the main idea of the passage?</p>
+              <p class="text-gray-600 mb-2"><strong>正确选项：</strong> B) The impact of AI on daily life</p>
+              <p class="text-gray-600 mb-2"><strong>关键句：</strong> "From virtual assistants to self-driving cars, AI is transforming the way we live and work..."</p>
+              <p class="text-gray-600"><strong>解析：</strong> 全文主要讨论AI如何改变我们的日常生活和工作方式，如虚拟助手、自动驾驶汽车等，因此B选项最能概括文章主旨。A选项只涉及历史，C选项只涉及技术挑战，D选项只涉及未来预测，都不够全面。</p>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-xl font-semibold text-secondary mb-4">翻译部分解析</h3>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3"><strong>参考译文：</strong></p>
+            <div class="bg-white p-4 rounded border border-gray-200 mb-3">
+              <p class="text-gray-600">Chinese tea culture refers to the culture of making and drinking tea in China. As the homeland of tea, China is credited with the discovery and utilization of tea, which is said to date back to the era of Shennong, at least 4,700 years ago. Even today, the tradition of serving tea as a form of etiquette still prevails among all ethnic groups in China.</p>
+            </div>
+            
+            <p class="text-gray-700 mb-3"><strong>翻译要点：</strong></p>
+            <ul class="list-disc pl-5 space-y-2 text-gray-600">
+              <li>"中国茶文化"译为"Chinese tea culture"，简洁准确</li>
+              <li>"茶的故乡"译为"homeland of tea"，比"birthplace"更贴切</li>
+              <li>"据说始于..."使用which引导的非限制性定语从句，使句子结构紧凑</li>
+              <li>"少说也有..."译为"at least"，表达准确</li>
+              <li>"民以茶代礼"译为"serving tea as a form of etiquette"，准确传达文化内涵</li>
+              <li>"风俗"译为"tradition...prevails"，比直译"custom"更符合英文表达习惯</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部 -->
+<footer class="bg-gray-50 px-6 lg:px-12 py-12 lg:py-16">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8">
+      <div class="col-span-1 md:col-span-2">
+        <a href="墨语智学首页.html" class="flex items-center gap-3 mb-4 lg:mb-6">
+          <span class="text-primary text-xl lg:text-2xl font-bold">墨语智学</span>
+        </a>
+        <p class="text-gray-600 mb-4 lg:mb-6 max-w-sm text-sm lg:text-base">墨语智学致力于为大学生提供优质的英语四六级备考服务，帮助学员实现英语学习目标。</p>
+        <div class="flex gap-3 lg:gap-4">
+          <a href="#" class="w-8 lg:w-10 h-8 lg:h-10 bg-blue-50 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+            <i class="fab fa-weixin text-lg lg:text-xl"></i>
+          </a>
+          <a href="#" class="w-8 lg:w-10 h-8 lg:h-10 bg-blue-50 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+            <i class="fab fa-weibo text-lg lg:text-xl"></i>
+          </a>
+          <a href="#" class="w-8 lg:w-10 h-8 lg:h-10 bg-blue-50 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+            <i class="fab fa-qq text-lg lg:text-xl"></i>
+          </a>
+        </div>
+      </div>
+      <div class="col-span-1">
+        <h4 class="font-semibold text-secondary mb-3 lg:mb-4 text-sm lg:text-base">学习资源</h4>
+        <ul class="space-y-2 lg:space-y-3">
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">在线课程</a></li>
+          <li><a href="墨语智学真题.html" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">真题解析</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">学习资料</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">备考攻略</a></li>
+        </ul>
+      </div>
+      <div class="col-span-1">
+        <h4 class="font-semibold text-secondary mb-3 lg:mb-4 text-sm lg:text-base">考试服务</h4>
+        <ul class="space-y-2 lg:space-y-3">
+          <li><a href="http://cet-bm.neea.edu.cn/" target="_blank" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">考试报名</a></li>
+          <li><a href="http://cet.neea.edu.cn/cet/" target="_blank" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">成绩查询</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">证书办理</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">考试时间</a></li>
+        </ul>
+      </div>
+      <div class="col-span-1">
+        <h4 class="font-semibold text-secondary mb-3 lg:mb-4 text-sm lg:text-base">关于我们</h4>
+        <ul class="space-y-2 lg:space-y-3">
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">公司介绍</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">加入我们</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">联系方式</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-colors text-sm lg:text-base">用户协议</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 lg:mt-16 pt-6 lg:pt-8 border-t border-gray-200">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-gray-500 text-xs lg:text-sm text-center md:text-left">© 2024 墨语智学教育科技有限公司 版权所有</p>
+        <div class="flex gap-4 lg:gap-8">
+          <a href="#" class="text-gray-500 hover:text-primary transition-colors text-xs lg:text-sm">隐私政策</a>
+          <a href="#" class="text-gray-500 hover:text-primary transition-colors text-xs lg:text-sm">服务条款</a>
+          <a href="#" class="text-gray-500 hover:text-primary transition-colors text-xs lg:text-sm">免责声明</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// 侧边栏切换功能
+document.addEventListener('DOMContentLoaded', function() {
+  // 获取所有侧边栏项
+  const typeItems = document.querySelectorAll('[data-type]');
+  const yearItems = document.querySelectorAll('[data-year]');
+  const tabButtons = document.querySelectorAll('[data-tab]');
+  
+  // 默认显示2024年四级真题
+  updateContent('cet4', '2024');
+  
+  // 类型切换
+  typeItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const type = this.getAttribute('data-type');
+      
+      // 更新活跃状态
+      typeItems.forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+      
+      // 获取当前选中的年份
+      const activeYearItem = document.querySelector('[data-year].active');
+      const year = activeYearItem ? activeYearItem.getAttribute('data-year') : '2024';
+      
+      // 更新内容
+      updateContent(type, year);
+      
+      // 更新移动端选择器
+      document.getElementById('mobile-type-select').value = type;
+    });
+  });
+  
+  // 年份切换
+  yearItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const year = this.getAttribute('data-year');
+      
+      // 更新活跃状态
+      yearItems.forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+      
+      // 获取当前选中的类型
+      const activeTypeItem = document.querySelector('[data-type].active');
+      const type = activeTypeItem ? activeTypeItem.getAttribute('data-type') : 'cet4';
+      
+      // 更新内容
+      updateContent(type, year);
+      
+      // 更新移动端选择器
+      document.getElementById('mobile-year-select').value = year;
+    });
+  });
+  
+  // 移动端选择器切换
+  document.getElementById('mobile-type-select').addEventListener('change', function() {
+    const type = this.value;
+    const year = document.getElementById('mobile-year-select').value;
+    updateContent(type, year);
+    
+    // 更新侧边栏活跃状态
+    typeItems.forEach(i => i.classList.remove('active'));
+    document.querySelector(`[data-type="${type}"]`).classList.add('active');
+  });
+  
+  document.getElementById('mobile-year-select').addEventListener('change', function() {
+    const year = this.value;
+    const type = document.getElementById('mobile-type-select').value;
+    updateContent(type, year);
+    
+    // 更新侧边栏活跃状态
+    yearItems.forEach(i => i.classList.remove('active'));
+    document.querySelector(`[data-year="${year}"]`).classList.add('active');
+  });
+  
+  // 标签切换(真题/解析)
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const tab = this.getAttribute('data-tab');
+      
+      // 更新活跃状态
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      this.classList.add('active');
+      
+      // 显示对应内容
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(`${tab}-content`).classList.add('active');
+    });
+  });
+  
+  // 更新内容标题和内容
+  function updateContent(type, year) {
+    const titleMap = {
+      'cet4': '英语四级',
+      'cet6': '英语六级'
+    };
+    
+    const title = document.getElementById('content-title');
+    title.textContent = `${year}年6月${titleMap[type]}真题`;
+    
+    // 这里可以添加AJAX请求来获取实际内容
+    // 目前只是模拟内容切换
+    console.log(`加载${year}年${type}真题数据...`);
+  }
+  
+  // 默认激活第一个年份项
+  if (yearItems.length > 0) {
+    yearItems[0].classList.add('active');
+  }
+});
+</script>
+</body>
+</html>

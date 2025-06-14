@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨语智学 AI - 你的智能学习伙伴</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2962FF',
+                        secondary: '#1A237E',
+                        aiBg: '#F8FAFF',
+                        userBg: '#2962FF',
+                        accent: '#FF6D00',
+                        lightBg: '#F5F7FF'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '2px',
+                        DEFAULT: '4px',
+                        'md': '8px',
+                        'lg': '12px',
+                        'xl': '16px',
+                        '2xl': '20px',
+                        '3xl': '24px',
+                        'full': '9999px'
+                    },
+                    fontFamily: {
+                        'sans': ['"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+                        'content': ['"PingFang SC"', '"Microsoft YaHei"', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'message': '0 2px 8px rgba(0, 0, 0, 0.08)',
+                        'input': '0 4px 12px rgba(41, 98, 255, 0.1)',
+                        'card': '0 4px 12px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #F5F7FF;
+        }
+        
+        .message-ai {
+            background: #F8FAFF;
+            border-radius: 0 16px 16px 16px;
+            position: relative;
+        }
+        
+        .message-ai::before {
+            content: "";
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 8px;
+            height: 16px;
+            background: #F8FAFF;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
+        
+        .message-user {
+            background: linear-gradient(135deg, #2962FF 0%, #1A237E 100%);
+            color: white;
+            border-radius: 16px 0 16px 16px;
+            position: relative;
+        }
+        
+        .message-user::after {
+            content: "";
+            position: absolute;
+            right: -8px;
+            top: 0;
+            width: 8px;
+            height: 16px;
+            background: linear-gradient(135deg, #2962FF 0%, #1A237E 100%);
+            clip-path: polygon(0 0, 0 100%, 100% 0);
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #2962FF;
+            border-radius: 50%;
+            margin-right: 4px;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: rgba(241, 241, 241, 0.5);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: rgba(136, 136, 136, 0.3);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: rgba(85, 85, 85, 0.5);
+        }
+        
+        .input-box {
+            transition: all 0.2s ease;
+            min-height: 48px;
+            max-height: 200px;
+        }
+        
+        .input-box:focus {
+            box-shadow: 0 0 0 2px rgba(41, 98, 255, 0.2);
+        }
+        
+        .send-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(41, 98, 255, 0.2);
+        }
+        
+        .send-btn:active {
+            transform: translateY(0);
+        }
+        
+        .tooltip {
+            opacity: 0;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        
+        .tooltip-parent:hover .tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-open {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-overlay-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .welcome-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            box-sizing: border-box;
+        }
+        
+        /* 输入框容器样式 - 修改后的新样式 */
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 16px 0;
+        }
+        
+        .input-wrapper {
+            padding: 0 16px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* 聊天内容区域 - 修改后的新样式 */
+        .chat-content-container {
+            position: fixed;
+            top: 72px; /* 顶部导航栏高度 */
+            bottom: 150px; /* 输入框区域高度 */
+            left: 0;
+            right: 0;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        .chat-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 20px;
+        }
+        
+        /* AI回复样式优化 */
+        .ai-response {
+            line-height: 1.6;
+            font-size: 15px;
+            color: #333;
+        }
+        
+        .ai-response h2, .ai-response h3 {
+            margin: 1.2em 0 0.8em;
+            font-weight: 600;
+            color: #222;
+        }
+        
+        .ai-response p {
+            margin-bottom: 1em;
+        }
+        
+        .ai-response ul, .ai-response ol {
+            margin: 0.8em 0;
+            padding-left: 1.5em;
+        }
+        
+        .ai-response li {
+            margin-bottom: 0.5em;
+        }
+        
+        .ai-response blockquote {
+            border-left: 3px solid #2962FF;
+            padding: 0.5em 1em;
+            margin: 1em 0;
+            background-color: rgba(41, 98, 255, 0.05);
+            color: #555;
+        }
+        
+        .ai-response pre {
+            background-color: #f6f8fa;
+            padding: 1em;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+        
+        .ai-response code {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        
+        .ai-response .citation {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 1em;
+        }
+        
+        .ai-response a {
+            color: #2962FF;
+            text-decoration: underline;
+        }
+        
+        .ai-response .emoji {
+            font-size: 1.2em;
+            margin-right: 0.3em;
+            vertical-align: middle;
+        }
+        
+        .ai-response .highlight {
+            background-color: rgba(255, 215, 0, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+        
+        .ai-response .tip-box {
+            background-color: rgba(41, 98, 255, 0.05);
+            border-left: 3px solid #2962FF;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .ai-response .example-box {
+            background-color: rgba(0, 128, 0, 0.05);
+            border-left: 3px solid #008000;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .ai-response .warning-box {
+            background-color: rgba(255, 0, 0, 0.05);
+            border-left: 3px solid #FF0000;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        @media (min-width: 1024px) {
+            .sidebar-open ~ .flex-1 .chat-content-container,
+            .sidebar-open ~ .flex-1 .input-container {
+                left: 256px;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .input-wrapper {
+                max-width: 100%;
+                padding: 0 12px;
+            }
+            
+            .chat-content-container {
+                top: 64px;
+                bottom: 140px;
+                padding: 12px;
+            }
+            
+            .message-ai, .message-user {
+                max-width: 90%;
+            }
+            
+            .ai-response {
+                font-size: 14px;
+            }
+        }
+        
+        /* 消息样式调整 */
+        .message-ai, .message-user {
+            max-width: 75%;
+        }
+        
+        /* 加载动画 */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        .typing-indicator {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        /* 助手卡片样式 */
+        .assistant-card {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .assistant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        .assistant-card.active {
+            border-color: #2962FF;
+            background-color: rgba(41, 98, 255, 0.05);
+        }
+        
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 0.2em 0.6em;
+            font-size: 0.75em;
+            border-radius: 9999px;
+            background-color: rgba(41, 98, 255, 0.1);
+            color: #2962FF;
+            margin-right: 0.5em;
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <header class="bg-white/90 backdrop-blur-md p-4 border-b border-gray-200/50 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <button id="sidebar-toggle" class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="墨语智学首页.html" class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h1 class="text-xl font-semibold text-gray-800 hover:text-primary transition-colors">墨语智学 AI</h1>
+            </a>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="墨语智学首页.html" class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 flex items-center gap-2">
+                <i class="fas fa-home"></i>
+                <span>返回首页</span>
+            </a>
+            <button id="new-chat-btn" class="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                <span>新对话</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <div id="sidebar" class="sidebar w-64 bg-white/90 backdrop-blur-md border-r border-gray-200/50 flex flex-col absolute lg:relative z-20 h-full shadow-lg">
+            <div class="p-4 border-b border-gray-200">
+                <button id="sidebar-new-chat-btn" class="w-full bg-primary text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    <span class="whitespace-nowrap">新建对话</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto scrollbar-custom">
+                <div class="p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-sm font-medium text-gray-700">对话分类</span>
+                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <button id="learning-assistant-btn" class="w-full text-left px-3 py-2 rounded-lg bg-blue-50 text-primary flex items-center gap-2">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>学习助手</span>
+                        </button>
+                        <button id="translation-assistant-btn" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-language"></i>
+                            <span>翻译助手</span>
+                        </button>
+                        <button id="writing-assistant-btn" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-pen"></i>
+                            <span>写作助手</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 快速操作按钮移动到侧边栏 -->
+                    <div class="mt-4 space-y-2">
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 quick-action-btn">
+                            <i class="fas fa-microphone-alt"></i>
+                            <span>口语练习</span>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 quick-action-btn">
+                            <i class="fas fa-spell-check"></i>
+                            <span>语法检查</span>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 quick-action-btn">
+                            <i class="fas fa-language"></i>
+                            <span>文本翻译</span>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 quick-action-btn">
+                            <i class="fas fa-book"></i>
+                            <span>学习计划</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-medium text-gray-700">历史对话</span>
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3" id="chat-history-list">
+                        <div class="p-3 rounded-lg bg-gray-50/80 hover:bg-gray-100/90 cursor-pointer backdrop-blur-sm border border-gray-100/20">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-900">英语口语练习</span>
+                                <span class="text-xs text-gray-500">2小时前</span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate">让我们来练习日常英语对话...</p>
+                        </div>
+                        <div class="p-3 rounded-lg bg-gray-50/80 hover:bg-gray-100/90 cursor-pointer backdrop-blur-sm border border-gray-100/20">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-900">文章润色</span>
+                                <span class="text-xs text-gray-500">昨天</span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate">这篇文章需要进行语法检查和优化...</p>
+                        </div>
+                        <div class="p-3 rounded-lg bg-gray-50/80 hover:bg-gray-100/90 cursor-pointer backdrop-blur-sm border border-gray-100/20">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-900">词汇学习</span>
+                                <span class="text-xs text-gray-500">2天前</span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate">今天我们来学习商务英语词汇...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <img src="https://img.icons8.com/color/96/circled-user-female-skin-type-7.png" class="w-8 h-8 rounded-full" alt="用户头像">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">王梦琪</div>
+                            <div class="text-xs text-gray-500">高级会员</div>
+                        </div>
+                    </div>
+                    <button class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 侧边栏遮罩 -->
+        <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black/50 z-10 lg:hidden"></div>
+
+        <!-- 聊天主区域 -->
+        <div class="flex-1 flex flex-col">
+            <!-- 聊天内容区域 - 修改后的新结构 -->
+            <div id="chat-content-container" class="chat-content-container scrollbar-custom">
+                <div id="chat-content" class="chat-content space-y-6">
+                    <!-- 欢迎消息 -->
+                    <div id="welcome-container" class="welcome-container">
+                        <div class="message-ai p-6 shadow-message">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-4">👋 你好！我是墨语智学 AI，你的智能学习伙伴</h2>
+                            <p class="font-content text-gray-700 mb-4">我可以帮助你解决英语学习中的各种问题，包括听力、阅读、写作和翻译等方面。让我们一起轻松愉快地学习吧！</p>
+                            
+                            <!-- 助手选择卡片 -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div id="learning-assistant-card" class="assistant-card active p-4 rounded-lg cursor-pointer">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </div>
+                                        <h3 class="font-medium">学习助手</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-2">解答英语学习问题，提供备考建议</p>
+                                    <div>
+                                        <span class="tag">语法解析</span>
+                                        <span class="tag">词汇学习</span>
+                                        <span class="tag">考试辅导</span>
+                                    </div>
+                                </div>
+                                
+                                <div id="translation-assistant-card" class="assistant-card p-4 rounded-lg cursor-pointer">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                            <i class="fas fa-language"></i>
+                                        </div>
+                                        <h3 class="font-medium">翻译助手</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-2">专业中英互译，保持原意准确传达</p>
+                                    <div>
+                                        <span class="tag">中译英</span>
+                                        <span class="tag">英译中</span>
+                                        <span class="tag">专业翻译</span>
+                                    </div>
+                                </div>
+                                
+                                <div id="writing-assistant-card" class="assistant-card p-4 rounded-lg cursor-pointer">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                                            <i class="fas fa-pen"></i>
+                                        </div>
+                                        <h3 class="font-medium">写作助手</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-2">润色英文写作，提升表达质量</p>
+                                    <div>
+                                        <span class="tag">文章润色</span>
+                                        <span class="tag">写作建议</span>
+                                        <span class="tag">范文生成</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-blue-50/50 p-4 rounded-lg">
+                                    <h3 class="font-semibold text-primary mb-2">📚 学习辅导</h3>
+                                    <ul class="font-content text-gray-700 space-y-1">
+                                        <li>• 解答英语学习问题</li>
+                                        <li>• 提供四六级/雅思备考建议</li>
+                                        <li>• 检查语法和写作</li>
+                                        <li>• 解析复杂句子结构</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-blue-50/50 p-4 rounded-lg">
+                                    <h3 class="font-semibold text-primary mb-2">✨ 实用功能</h3>
+                                    <ul class="font-content text-gray-700 space-y-1">
+                                        <li>• 专业中英文翻译</li>
+                                        <li>• 模拟口语对话练习</li>
+                                        <li>• 生成个性化学习计划</li>
+                                        <li>• 提供学习资源推荐</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 这里会动态添加聊天消息 -->
+                </div>
+            </div>
+
+            <!-- 输入区域 - 修改后的新结构 -->
+            <div id="input-container" class="input-container">
+                <div class="input-wrapper">
+                    <!-- 输入框 -->
+                    <div class="flex gap-2">
+                        <div class="flex-1 relative">
+                            <textarea 
+                                id="user-input"
+                                class="input-box w-full p-3 pr-10 rounded-lg border border-gray-200 bg-white/80 backdrop-blur-sm focus:outline-none resize-none font-content"
+                                rows="1"
+                                placeholder="输入消息，按 Shift+Enter 换行"
+                            ></textarea>
+                        </div>
+                        <button 
+                            id="send-btn"
+                            class="send-btn bg-gradient-to-r from-primary to-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center shadow"
+                            disabled
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 快捷工具栏 -->
+                    <div class="flex items-center justify-center gap-3 mt-3">
+                        <button id="voice-btn" class="tooltip-parent w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
+                            <i class="fas fa-microphone"></i>
+                            <span class="tooltip absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">语音输入</span>
+                        </button>
+                        <button id="image-btn" class="tooltip-parent w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
+                            <i class="fas fa-camera"></i>
+                            <span class="tooltip absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">图片识别</span>
+                        </button>
+                        <button id="file-btn" class="tooltip-parent w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
+                            <i class="fas fa-file-upload"></i>
+                            <span class="tooltip absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">文件上传</span>
+                        </button>
+                        <div class="h-5 w-px bg-gray-200 mx-1"></div>
+                        <button id="keyboard-btn" class="tooltip-parent w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
+                            <i class="fas fa-keyboard"></i>
+                            <span class="tooltip absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">键盘输入</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文件上传模态框 -->
+    <div id="file-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium">上传文件</h3>
+                <button id="close-file-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4">
+                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                <p class="text-gray-600 mb-2">拖拽文件到此处或点击上传</p>
+                <input type="file" id="file-upload" class="hidden" multiple>
+                <button id="select-file-btn" class="bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90">
+                    选择文件
+                </button>
+            </div>
+            <div id="file-preview" class="hidden">
+                <h4 class="text-sm font-medium mb-2">已选择文件：</h4>
+                <div id="file-list" class="text-sm text-gray-600 mb-4"></div>
+                <button id="confirm-upload" class="w-full bg-primary text-white py-2 rounded-lg hover:opacity-90">
+                    上传并发送
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 配置智普API
+        const ZHIPU_API_KEY = "fb70a667fee0422ca79519e4fe598cff.JO3wADNEk2VeaPYQ";
+        const ZHIPU_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+        
+        // DOM元素
+        const chatContainer = document.getElementById('chat-content');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const sidebarNewChatBtn = document.getElementById('sidebar-new-chat-btn');
+        const inputContainer = document.getElementById('input-container');
+        const welcomeContainer = document.getElementById('welcome-container');
+        const voiceBtn = document.getElementById('voice-btn');
+        const fileBtn = document.getElementById('file-btn');
+        const fileModal = document.getElementById('file-modal');
+        const closeFileModal = document.getElementById('close-file-modal');
+        const fileUpload = document.getElementById('file-upload');
+        const selectFileBtn = document.getElementById('select-file-btn');
+        const filePreview = document.getElementById('file-preview');
+        const fileList = document.getElementById('file-list');
+        const confirmUpload = document.getElementById('confirm-upload');
+        const chatHistoryList = document.getElementById('chat-history-list');
+        const chatContentContainer = document.getElementById('chat-content-container');
+        
+        // 助手相关元素
+        const learningAssistantBtn = document.getElementById('learning-assistant-btn');
+        const translationAssistantBtn = document.getElementById('translation-assistant-btn');
+        const writingAssistantBtn = document.getElementById('writing-assistant-btn');
+        const learningAssistantCard = document.getElementById('learning-assistant-card');
+        const translationAssistantCard = document.getElementById('translation-assistant-card');
+        const writingAssistantCard = document.getElementById('writing-assistant-card');
+        
+        // 当前对话ID
+        let currentChatId = generateChatId();
+        // 是否正在等待AI响应
+        let isWaitingForResponse = false;
+        // 语音识别API
+        let recognition = null;
+        // 当前选择的助手类型
+        let currentAssistant = 'learning';
+        // 对话历史
+        let conversationHistory = [
+            {
+                role: "system",
+                content: getSystemPrompt('learning')
+            }
+        ];
+        
+        // 助手系统提示词
+        function getSystemPrompt(assistantType) {
+            const prompts = {
+                'learning': `你是一个专业且友好的中英文学习助手，名叫墨语智学AI。你的任务是帮助用户解决英语学习中的各种问题，包括听力、阅读、写作和翻译等方面。回答要专业、准确且友好，使用现代年轻人喜欢的轻松语言风格。请遵循以下规则：
+1. 使用简洁明了的语言，避免复杂术语，必要时用简单例子解释
+2. 适当使用emoji表情增加亲和力
+3. 对专业问题提供详细解析，包括语法结构、词汇用法等
+4. 对复杂概念分步骤解释
+5. 提供实用学习技巧和记忆方法
+6. 保持积极鼓励的态度`,
+                'translation': `你是一个专业的中英文翻译助手，名叫墨语智学AI。你的任务是提供准确、流畅的中英互译服务。请遵循以下规则：
+1. 保持原文意思准确传达
+2. 译文要符合目标语言的表达习惯
+3. 对专业术语提供解释
+4. 对文化差异部分提供注释
+5. 提供多种可能的翻译版本供选择
+6. 保持翻译的自然流畅`,
+                'writing': `你是一个专业的英文写作助手，名叫墨语智学AI。你的任务是帮助用户提升英文写作水平。请遵循以下规则：
+1. 对用户提供的文本进行润色，提升表达质量
+2. 解释修改的原因和好处
+3. 提供多种表达方式供选择
+4. 指出常见的写作错误
+5. 根据需求调整写作风格
+6. 保持反馈建设性和鼓励性`
+            };
+            
+            return prompts[assistantType] || prompts['learning'];
+        }
+        
+        // 初始化函数
+        function init() {
+            setupEventListeners();
+            loadChatHistory();
+            adjustInputPosition();
+            setupAssistantCards();
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 侧边栏切换
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+            
+            // 新对话按钮
+            newChatBtn.addEventListener('click', createNewChat);
+            sidebarNewChatBtn.addEventListener('click', createNewChat);
+            
+            // 输入框事件
+            userInput.addEventListener('input', handleInputChange);
+            userInput.addEventListener('keydown', handleKeyDown);
+            sendBtn.addEventListener('click', sendMessage);
+            
+            // 快捷操作按钮
+            document.querySelectorAll('.quick-action-btn').forEach(btn => {
+                btn.addEventListener('click', handleQuickAction);
+            });
+            
+            // 文件上传
+            fileBtn.addEventListener('click', showFileModal);
+            closeFileModal.addEventListener('click', hideFileModal);
+            selectFileBtn.addEventListener('click', () => fileUpload.click());
+            fileUpload.addEventListener('change', handleFileSelect);
+            confirmUpload.addEventListener('click', handleFileUpload);
+            
+            // 语音输入
+            voiceBtn.addEventListener('click', toggleVoiceInput);
+            
+            // 窗口大小变化
+            window.addEventListener('resize', adjustInputPosition);
+            
+            // 点击聊天历史
+            document.querySelectorAll('#chat-history-list > div').forEach(item => {
+                item.addEventListener('click', loadChatFromHistory);
+            });
+            
+            // 助手按钮点击
+            learningAssistantBtn.addEventListener('click', () => switchAssistant('learning'));
+            translationAssistantBtn.addEventListener('click', () => switchAssistant('translation'));
+            writingAssistantBtn.addEventListener('click', () => switchAssistant('writing'));
+        }
+        
+        // 设置助手卡片
+        function setupAssistantCards() {
+            learningAssistantCard.addEventListener('click', () => switchAssistant('learning'));
+            translationAssistantCard.addEventListener('click', () => switchAssistant('translation'));
+            writingAssistantCard.addEventListener('click', () => switchAssistant('writing'));
+        }
+        
+        // 切换助手类型
+        function switchAssistant(type) {
+            currentAssistant = type;
+            
+            // 更新卡片选中状态
+            [learningAssistantCard, translationAssistantCard, writingAssistantCard].forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            if (type === 'learning') {
+                learningAssistantCard.classList.add('active');
+                learningAssistantBtn.classList.add('bg-blue-50', 'text-primary');
+                translationAssistantBtn.classList.remove('bg-blue-50', 'text-primary');
+                writingAssistantBtn.classList.remove('bg-blue-50', 'text-primary');
+            } else if (type === 'translation') {
+                translationAssistantCard.classList.add('active');
+                translationAssistantBtn.classList.add('bg-blue-50', 'text-primary');
+                learningAssistantBtn.classList.remove('bg-blue-50', 'text-primary');
+                writingAssistantBtn.classList.remove('bg-blue-50', 'text-primary');
+            } else if (type === 'writing') {
+                writingAssistantCard.classList.add('active');
+                writingAssistantBtn.classList.add('bg-blue-50', 'text-primary');
+                learningAssistantBtn.classList.remove('bg-blue-50', 'text-primary');
+                translationAssistantBtn.classList.remove('bg-blue-50', 'text-primary');
+            }
+            
+            // 更新系统提示
+            conversationHistory[0] = {
+                role: "system",
+                content: getSystemPrompt(type)
+            };
+            
+            // 显示切换提示
+            const assistantNames = {
+                'learning': '学习助手',
+                'translation': '翻译助手',
+                'writing': '写作助手'
+            };
+            
+            addMessage(`已切换到${assistantNames[type]}模式，我可以为你提供相关帮助啦！`, 'ai');
+        }
+        
+        // 生成唯一对话ID
+        function generateChatId() {
+            return 'chat-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+        
+        // 侧边栏切换
+        function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-open');
+            sidebarOverlay.classList.toggle('sidebar-overlay-open');
+            adjustInputPosition();
+        }
+        
+        // 调整输入框位置
+        function adjustInputPosition() {
+            if (window.innerWidth >= 1024 && sidebar.classList.contains('sidebar-open')) {
+                chatContentContainer.style.left = '256px';
+                inputContainer.style.left = '256px';
+            } else {
+                chatContentContainer.style.left = '0';
+                inputContainer.style.left = '0';
+            }
+        }
+        
+        // 处理输入框变化
+        function handleInputChange() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            sendBtn.disabled = this.value.trim() === '';
+        }
+        
+        // 处理键盘事件
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message || isWaitingForResponse) return;
+            
+            // 添加用户消息
+            addMessage(message, 'user');
+            userInput.value = '';
+            userInput.style.height = '48px';
+            sendBtn.disabled = true;
+            
+            // 更新对话历史
+            conversationHistory.push({
+                role: "user",
+                content: message
+            });
+            
+            // 显示AI正在输入指示器
+            const typingIndicator = showTypingIndicator();
+            isWaitingForResponse = true;
+            
+            try {
+                // 调用智普API
+                const aiResponse = await callZhipuAPI();
+                
+                // 移除输入指示器并添加AI回复
+                removeTypingIndicator(typingIndicator);
+                addMessage(aiResponse, 'ai');
+                
+                // 更新对话历史
+                conversationHistory.push({
+                    role: "assistant",
+                    content: aiResponse
+                });
+                
+                // 保存对话到历史记录
+                saveChatToHistory(message, aiResponse);
+            } catch (error) {
+                removeTypingIndicator(typingIndicator);
+                addMessage("😅 抱歉，我暂时无法处理您的请求。请稍后再试。", 'ai');
+                console.error("API调用错误:", error);
+            } finally {
+                isWaitingForResponse = false;
+            }
+        }
+        
+        // 调用智普API
+        async function callZhipuAPI() {
+            const requestData = {
+                model: "glm-4",
+                messages: conversationHistory,
+                temperature: 0.7,
+                max_tokens: 2000
+            };
+            
+            const response = await fetch(ZHIPU_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ZHIPU_API_KEY}`,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || `API请求失败: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+        
+        // 添加消息到聊天窗口
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 ${sender === 'user' ? 'justify-end' : ''} message`;
+            
+            // 格式化AI回复
+            const formattedText = sender === 'ai' ? formatAIResponse(text) : formatMessageText(text);
+            
+            messageDiv.innerHTML = `
+                ${sender === 'ai' ? `
+                    <div class="flex-shrink-0">
+                        <img src="https://imgur.la/images/2025/05/25/8FD2FAC7A22B1A46F97B48F3FB37223F.jpg" class="w-10 h-10 rounded-full" alt="AI头像">
+                    </div>
+                ` : ''}
+                
+                <div class="flex-1 ${sender === 'user' ? 'flex justify-end' : ''}">
+                    <div class="${sender === 'user' ? 'message-user' : 'message-ai'} p-4 shadow-message">
+                        <div class="${sender === 'ai' ? 'ai-response' : ''}">
+                            ${formattedText}
+                        </div>
+                    </div>
+                </div>
+                
+                ${sender === 'user' ? `
+                    <div class="flex-shrink-0">
+                        <img src="https://imgur.la/images/2025/05/25/5DC7B90094E838CB7FF1A4EA6EE289BF.jpg" class="w-10 h-10 rounded-full" alt="用户头像">
+                    </div>
+                ` : ''}
+            `;
+            
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // 格式化AI回复
+        function formatAIResponse(text) {
+            // 1. 处理Markdown风格的标题
+            text = text.replace(/^#\s(.+)$/gm, '<h2>$1</h2>')
+                       .replace(/^##\s(.+)$/gm, '<h3>$1</h3>')
+                       .replace(/^###\s(.+)$/gm, '<h4>$1</h4>');
+            
+            // 2. 处理列表项
+            text = text.replace(/^\*\s(.+)$/gm, '<li>$1</li>')
+                       .replace(/^-\s(.+)$/gm, '<li>$1</li>')
+                       .replace(/^\d\.\s(.+)$/gm, '<li>$1</li>');
+            
+            // 3. 处理代码块
+            text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            
+            // 4. 处理内联代码
+            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // 5. 处理引用
+            text = text.replace(/^>\s(.+)$/gm, '<blockquote>$1</blockquote>');
+            
+            // 6. 处理提示框
+            text = text.replace(/\[tip\]([\s\S]*?)\[\/tip\]/g, '<div class="tip-box">$1</div>');
+            text = text.replace(/\[example\]([\s\S]*?)\[\/example\]/g, '<div class="example-box">$1</div>');
+            text = text.replace(/\[warning\]([\s\S]*?)\[\/warning\]/g, '<div class="warning-box">$1</div>');
+            
+            // 7. 处理高亮文本
+            text = text.replace(/\*\*(.+?)\*\*/g, '<span class="highlight">$1</span>');
+            
+            // 8. 处理换行
+            text = text.replace(/\n/g, '<br>');
+            
+            // 9. 自动检测URL并添加链接
+            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            
+            // 10. 添加emoji表情
+            const emojiMap = {
+                ':smile:': '😊',
+                ':laugh:': '😂',
+                ':wink:': '😉',
+                ':cool:': '😎',
+                ':thumbsup:': '👍',
+                ':lightbulb:': '💡',
+                ':book:': '📚',
+                ':pencil:': '✏️',
+                ':star:': '⭐',
+                ':check:': '✅'
+            };
+            
+            for (const [key, emoji] of Object.entries(emojiMap)) {
+                text = text.replace(new RegExp(key, 'g'), `<span class="emoji">${emoji}</span>`);
+            }
+            
+            return text;
+        }
+        
+        // 格式化普通消息文本
+        function formatMessageText(text) {
+            // 处理换行
+            let formattedText = text.replace(/\n/g, '<br>');
+            
+            // 处理引用 (以"> "开头的行)
+            formattedText = formattedText.replace(/(&gt;|>)\s*(.*?)(<br>|$)/g, '<div class="citation">$2</div>');
+            
+            return formattedText;
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            chatContentContainer.scrollTo({
+                top: chatContentContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+        
+        // 显示"正在输入"指示器
+        function showTypingIndicator() {
+            const indicatorDiv = document.createElement('div');
+            indicatorDiv.className = 'flex gap-3 message';
+            indicatorDiv.id = 'typing-indicator';
+            
+            indicatorDiv.innerHTML = `
+                <div class="flex-shrink-0">
+                    <img src="https://imgur.la/images/2025/05/25/8FD2FAC7A22B1A46F97B48F3FB37223F.jpg" class="w-10 h-10 rounded-full" alt="AI头像">
+                </div>
+                <div class="message-ai p-4 shadow-message">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(indicatorDiv);
+            scrollToBottom();
+            
+            return indicatorDiv;
+        }
+        
+        // 移除"正在输入"指示器
+        function removeTypingIndicator(indicator) {
+            if (indicator && indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            }
+        }
+        
+        // 创建新对话
+        function createNewChat() {
+            if (isWaitingForResponse) {
+                alert('请等待当前对话完成后再开始新对话');
+                return;
+            }
+            
+            if (confirm('确定要开始新的对话吗？当前对话将保存到历史记录中。')) {
+                // 生成新对话ID
+                currentChatId = generateChatId();
+                
+                // 重置对话历史
+                conversationHistory = [
+                    {
+                        role: "system",
+                        content: getSystemPrompt(currentAssistant)
+                    }
+                ];
+                
+                // 清除聊天内容，保留欢迎消息
+                const messages = document.querySelectorAll('.message');
+                messages.forEach(msg => {
+                    if (!msg.closest('.welcome-container')) {
+                        msg.remove();
+                    }
+                });
+                
+                userInput.value = '';
+                userInput.style.height = '48px';
+                sendBtn.disabled = true;
+                
+                // 滚动到顶部显示欢迎消息
+                chatContentContainer.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        // 处理快捷操作
+        function handleQuickAction() {
+            const action = this.textContent.trim();
+            const prompts = {
+                '口语练习': '我想练习英语口语，请模拟一个日常对话场景，比如在咖啡店点餐。',
+                '语法检查': '请帮我检查以下英文句子的语法是否正确，并指出错误：',
+                '文本翻译': '请将以下中文翻译成英文：',
+                '学习计划': '我需要一个为期30天的英语学习计划，目标是提升商务英语能力。'
+            };
+            
+            userInput.value = prompts[action] || action;
+            userInput.focus();
+            sendBtn.disabled = false;
+            userInput.style.height = 'auto';
+            userInput.style.height = (userInput.scrollHeight) + 'px';
+        }
+        
+        // 文件上传
+        function showFileModal() {
+            fileModal.classList.remove('hidden');
+        }
+
+        function hideFileModal() {
+            fileModal.classList.add('hidden');
+            fileUpload.value = '';
+            filePreview.classList.add('hidden');
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+
+            fileList.innerHTML = '';
+            for (let i = 0; i < files.length; i++) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'flex items-center justify-between py-1';
+                fileItem.innerHTML = `
+                    <span class="truncate flex-1">${files[i].name}</span>
+                    <span class="text-xs text-gray-500 ml-2">${formatFileSize(files[i].size)}</span>
+                `;
+                fileList.appendChild(fileItem);
+            }
+
+            filePreview.classList.remove('hidden');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function handleFileUpload() {
+            const files = fileUpload.files;
+            if (files.length === 0) return;
+
+            hideFileModal();
+
+            // 显示上传状态
+            const uploadStatus = document.createElement('div');
+            uploadStatus.className = 'flex gap-3 message';
+            uploadStatus.innerHTML = `
+                <div class="flex-shrink-0">
+                    <img src="https://imgur.la/images/2025/05/25/5DC7B90094E838CB7FF1A4EA6EE289BF.jpg" class="w-10 h-10 rounded-full" alt="用户头像">
+                </div>
+                <div class="flex-1 flex justify-end">
+                    <div class="message-user p-4 shadow-message">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-spinner spinner"></i>
+                            <span>正在上传文件...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(uploadStatus);
+            scrollToBottom();
+
+            try {
+                // 模拟文件上传过程
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // 更新上传状态为完成
+                uploadStatus.querySelector('.fa-spinner').classList.replace('fa-spinner', 'fa-check');
+                uploadStatus.querySelector('span').textContent = `已上传 ${files.length} 个文件`;
+                
+                // 添加文件信息到聊天
+                let fileInfo = '我已上传以下文件：\n';
+                for (let i = 0; i < files.length; i++) {
+                    fileInfo += `• ${files[i].name} (${formatFileSize(files[i].size)})\n`;
+                }
+                
+                // 替换上传状态为实际文件信息
+                uploadStatus.querySelector('.message-user').innerHTML = `
+                    <p class="font-content text-white">${fileInfo.replace(/\n/g, '<br>')}</p>
+                `;
+                
+                // 如果是图片文件，显示预览
+                const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+                if (imageFiles.length > 0) {
+                    const imagePreview = document.createElement('div');
+                    imagePreview.className = 'mt-2 grid grid-cols-2 gap-2';
+                    
+                    for (let i = 0; i < Math.min(imageFiles.length, 4); i++) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'rounded-lg max-w-full h-auto';
+                            imagePreview.appendChild(img);
+                        };
+                        reader.readAsDataURL(imageFiles[i]);
+                    }
+                    
+                    uploadStatus.querySelector('.message-user').appendChild(imagePreview);
+                }
+                
+                // 调用API处理文件内容
+                if (files.length === 1 && files[0].type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        const fileContent = e.target.result;
+                        const typingIndicator = showTypingIndicator();
+                        
+                        try {
+                            // 将文件内容添加到对话历史
+                            conversationHistory.push({
+                                role: "user",
+                                content: `请分析以下文件内容：\n${fileContent.substring(0, 2000)}`
+                            });
+                            
+                            const aiResponse = await callZhipuAPI();
+                            removeTypingIndicator(typingIndicator);
+                            addMessage(aiResponse, 'ai');
+                            
+                            // 将AI回复添加到对话历史
+                            conversationHistory.push({
+                                role: "assistant",
+                                content: aiResponse
+                            });
+                        } catch (error) {
+                            removeTypingIndicator(typingIndicator);
+                            addMessage("😅 抱歉，处理文件内容时出错：" + error.message, 'ai');
+                        }
+                    };
+                    reader.readAsText(files[0]);
+                }
+            } catch (error) {
+                uploadStatus.querySelector('.fa-spinner').classList.replace('fa-spinner', 'fa-times');
+                uploadStatus.querySelector('span').textContent = '文件上传失败';
+                console.error("文件上传错误:", error);
+            }
+        }
+
+        // 语音输入功能
+        function toggleVoiceInput() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert('您的浏览器不支持语音识别功能，请使用Chrome或Edge浏览器');
+                return;
+            }
+
+            if (recognition && recognition.isListening) {
+                stopVoiceRecognition();
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                return;
+            }
+
+            startVoiceRecognition();
+            voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+        }
+
+        function startVoiceRecognition() {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'zh-CN';
+
+            recognition.onstart = function() {
+                console.log('语音识别开始');
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                if (finalTranscript) {
+                    userInput.value = finalTranscript;
+                    handleInputChange.call(userInput);
+                } else if (interimTranscript) {
+                    userInput.value = interimTranscript;
+                    handleInputChange.call(userInput);
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('语音识别错误:', event.error);
+                stopVoiceRecognition();
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+
+            recognition.onend = function() {
+                console.log('语音识别结束');
+                stopVoiceRecognition();
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+
+            recognition.start();
+            recognition.isListening = true;
+        }
+
+        function stopVoiceRecognition() {
+            if (recognition) {
+                recognition.stop();
+                recognition.isListening = false;
+            }
+        }
+
+        // 聊天历史功能
+        function saveChatToHistory(userMessage, aiResponse) {
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+
+            if (!chatHistory[currentChatId]) {
+                chatHistory[currentChatId] = {
+                    id: currentChatId,
+                    title: userMessage.substring(0, 30) + (userMessage.length > 30 ? '...' : ''),
+                    preview: aiResponse.substring(0, 50) + (aiResponse.length > 50 ? '...' : ''),
+                    timestamp: Date.now(),
+                    messages: [],
+                    assistantType: currentAssistant
+                };
+            }
+
+            chatHistory[currentChatId].messages.push({
+                user: userMessage,
+                ai: aiResponse,
+                timestamp: Date.now()
+            });
+
+            // 更新最后活跃时间
+            chatHistory[currentChatId].timestamp = Date.now();
+
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            updateChatHistoryUI(chatHistory);
+        }
+
+        function loadChatHistory() {
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            updateChatHistoryUI(chatHistory);
+        }
+
+        function updateChatHistoryUI(chatHistory) {
+            chatHistoryList.innerHTML = '';
+
+            const sortedChats = Object.values(chatHistory).sort((a, b) => b.timestamp - a.timestamp);
+
+            if (sortedChats.length === 0) {
+                chatHistoryList.innerHTML = `
+                    <div class="text-center py-4 text-gray-500">
+                        <p>暂无历史对话</p>
+                    </div>
+                `;
+                return;
+            }
+
+            sortedChats.forEach(chat => {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'p-3 rounded-lg bg-gray-50/80 hover:bg-gray-100/90 cursor-pointer backdrop-blur-sm border border-gray-100/20';
+                chatItem.dataset.chatId = chat.id;
+                
+                const timeAgo = formatTimeAgo(chat.timestamp);
+                
+                chatItem.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-900">${chat.title}</span>
+                        <span class="text-xs text-gray-500">${timeAgo}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 truncate">${chat.preview}</p>
+                    <div class="mt-1 flex items-center">
+                        <span class="text-xs text-gray-400">${getAssistantIcon(chat.assistantType || 'learning')}</span>
+                    </div>
+                `;
+                
+                chatItem.addEventListener('click', () => loadChatFromHistory(chat.id));
+                chatHistoryList.appendChild(chatItem);
+            });
+        }
+
+        function getAssistantIcon(assistantType) {
+            const icons = {
+                'learning': '<i class="fas fa-graduation-cap text-xs mr-1"></i>学习助手',
+                'translation': '<i class="fas fa-language text-xs mr-1"></i>翻译助手',
+                'writing': '<i class="fas fa-pen text-xs mr-1"></i>写作助手'
+            };
+            return icons[assistantType] || icons['learning'];
+        }
+
+        function formatTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+            if (seconds < 60) return '刚刚';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}分钟前`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}小时前`;
+            return `${Math.floor(seconds / 86400)}天前`;
+        }
+
+        function loadChatFromHistory(chatId) {
+            if (typeof chatId !== 'string') {
+                chatId = this.dataset.chatId;
+            }
+
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            const chat = chatHistory[chatId];
+
+            if (!chat) return;
+
+            // 设置当前对话ID和助手类型
+            currentChatId = chatId;
+            currentAssistant = chat.assistantType || 'learning';
+            
+            // 更新UI显示当前助手
+            switchAssistant(currentAssistant);
+
+            // 重置对话历史
+            conversationHistory = [
+                {
+                    role: "system",
+                    content: getSystemPrompt(currentAssistant)
+                }
+            ];
+
+            // 清除现有聊天内容
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => {
+                if (!msg.closest('.welcome-container')) {
+                    msg.remove();
+                }
+            });
+
+            // 添加历史消息并重建对话历史
+            chat.messages.forEach(msg => {
+                addMessage(msg.user, 'user');
+                addMessage(msg.ai, 'ai');
+                
+                // 重建对话历史
+                conversationHistory.push({
+                    role: "user",
+                    content: msg.user
+                });
+                conversationHistory.push({
+                    role: "assistant",
+                    content: msg.ai
+                });
+            });
+
+            // 关闭侧边栏（如果是移动设备）
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+            
+            // 滚动到底部
+            scrollToBottom();
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
